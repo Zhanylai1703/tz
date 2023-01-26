@@ -1,74 +1,48 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
+from django.shortcuts import render
+from django.urls.conf import include
+
 from .models import Item
-from items.serializers import ItemSerializer
+from .serializers import ItemSerializer
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework import status
-from django.shortcuts import get_object_or_404
-from rest_framework import permissions
 
-@api_view(['GET'])
-@permission_classes((permissions.AllowAny,))
-def ApiOverview(request):
-    api_urls = {
-        'all_items': '/',
-        'Search by Category': '/?category=category_name',
-        'Search by Subcategory': '/?subcategory=category_name',
-        'Add': '/create',
-        'Update': '/update/pk',
-        'Delete': '/item/pk/delete'
-    }
-  
-    return Response(api_urls)
+from django.http import Http404
 
+class ItemsListView(APIView):
+    def get(self,request,format = None):
+        snippets = Item.objects.all()
+        serializer =ItemSerializer(snippets ,many = True)
+        return Response(serializer.data)
 
-@api_view(['POST'])
-@permission_classes((permissions.AllowAny,))
-def add_items(request):
-    item = ItemSerializer(data=request.data)
-  
-    # validating for already existing data
-    if Item.objects.filter(**request.data).exists():
-        raise serializers.ValidationError('This data already exists')
-  
-    if item.is_valid():
-        item.save()
-        return Response(item.data)
-    else:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+    def post(self,request,format= None):
+        serializer = ItemSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status = status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-@permission_classes((permissions.AllowAny,))
-def view_items(request):
-    
-    # checking for the parameters from the URL
-    if request.query_params:
-        items = Item.objects.filter(**request.query_param.dict())
-    else:
-        items = Item.objects.all()
-  
-    # if there is something in items else raise error
-    if items:
-        data = ItemSerializer(items)
-        return Response(data)
-    else:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+class ItemsDetailView(APIView):
+    def get_object(self,pk):
+        try:
+            return Item.objects.get(pk=pk)
+        except Item.DoesNotExist:
+            raise Http404
 
-@api_view(['POST'])
-@permission_classes((permissions.AllowAny,))
-def update_items(request, pk):
-    item = Item.objects.get(pk=pk)
-    data = ItemSerializer(instance=item, data=request.data)
-  
-    if data.is_valid():
-        data.save()
-        return Response(data.data)
-    else:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+    def get(self,request,pk,format = None):
+        snippet = self.get_object(pk)
+        serializer = ItemSerializer(snippet)
+        return Response (serializer.data)
 
+    def put(self,request,pk,format=None):
+        snippet=self.get_object(pk)
+        serializer = ItemSerializer(snippet,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['DELETE'])
-@permission_classes((permissions.AllowAny,))
-def delete_items(request, pk):
-    item = get_object_or_404(Item, pk=pk)
-    item.delete()
-    return Response(status=status.HTTP_202_ACCEPTED)
+    def delete(self,request,pk,format= None):
+        snippet=self.get_object(pk)
+        snippet.delete()
