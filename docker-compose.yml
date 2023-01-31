@@ -1,0 +1,21 @@
+version: '3.1'
+services:
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=zhann
+      - POSTGRES_PASSWORD=sun123
+      - POSTGRES_DB=itemDB
+    volumes:
+      - db_data:/var/lib/postgresql/data/
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+volumes:
+  db_data:
