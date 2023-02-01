@@ -86,10 +86,10 @@ WSGI_APPLICATION = 'main.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'itemDB',
-        'USER': 'Zhann',
-        'PASSWORD': 'sun123',
-        'HOST': '127.0.0.1',
+        'NAME': 'postdb',
+        'USER': 'hande',
+        'PASSWORD': 'hande123',
+        'HOST':  'db', 
         'PORT': '5432',
     }
 }
@@ -145,3 +145,4 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+

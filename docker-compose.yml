@@ -3,9 +3,9 @@ services:
   db:
     image: postgres:latest
     environment:
-      - POSTGRES_USER=zhann
-      - POSTGRES_PASSWORD=sun123
-      - POSTGRES_DB=itemDB
+      - POSTGRES_USER='hande'
+      - POSTGRES_PASSWORD='hande123'
+      - POSTGRES_DB='postdb'
     volumes:
       - db_data:/var/lib/postgresql/data/
   web:
@@ -19,3 +19,4 @@ services:
       - db
 volumes:
   db_data:
+
